@@ -23,7 +23,7 @@ train_TorC$Y = factor(dat$T)
 NUM_AFTER_BURN_IN = 2000
 NUM_BEFORE_BURN_IN = 500
 TREE_NUM = 50
-p_val_num = 100
+p_val_num = 50
 show_num  = 100
 ## Fit bart
 

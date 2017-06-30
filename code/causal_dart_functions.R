@@ -60,9 +60,9 @@ get_train_test_cv = function(dat, fold){
   return(output)
 }
 
-est_coverage = function(mat, Tau){
-  MIN = apply(mat, 2, min)
-  MAX = apply(mat, 2, max)
+est_coverage = function(mat, Tau, cov_perc){
+  MIN = apply(mat, 2, min)#apply(mat, 2, quantile, probs = cov_perc[1])
+  MAX = apply(mat, 2, max)#apply(mat, 2, quantile, probs = cov_perc[2])
   
   index = which( Tau > MIN & Tau < MAX )
   count = length(index)
