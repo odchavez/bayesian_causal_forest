@@ -83,32 +83,32 @@ organize_causal_posterior = function(cate_dart_out){
 
 #using simulation.2 data from Athey CAT paper
 pred_num = 20
-std_per = 0.8
+std_per = 0.64
 set_val = 2
-dat = read.csv(paste0("data/caus_sim_1_N=10000_P=1000_noise_percent=",std_per,"_set_",set_val,".csv"))[1:1000,1:(6+pred_num)]
-cnames = c("X","Tau","Y0_given_X","Y1_given_X","Y","T")
-train_TorC = list()
-train_TorC$X = dat[,-which(names(dat) %in% cnames)]
-train_TorC$Y = factor(dat$T)
 NUM_AFTER_BURN_IN = 2000
 NUM_BEFORE_BURN_IN = 500
 TREE_NUM = 50
 p_val_num = 20
 show_num  = 100
 ## Fit causal dart
-prop_T = seq(0.05,0.95, by = 0.05)
-coverage = rep(NA, length(prop_T))
-for(i in 1:length(prop_T)){
+squash_val = seq(0.1, 1, by = 0.1)
+coverage = rep(NA, length(squash_val))
+for(i in 1:length(squash_val)){
+  dat = read.csv(paste0("data/caus_sim_1_N=10000_P=1000_noise_percent=",std_per,"_squash_val_",squash_val[i],".csv"))[1:1000,1:(6+pred_num)]
+  cnames = c("X","Tau","Y0_given_X","Y1_given_X","Y","T")
+  train_TorC = list()
+  train_TorC$X = dat[,-which(names(dat) %in% cnames)]
+  train_TorC$Y = factor(dat$T)
   temp = train_TorC
-  temp$Y = select_percent_T(prop_T[i], length(temp$Y))
+  temp$Y = select_percent_T(squash_val[i], length(temp$Y))
   cate_dart = causal_dart(dat, temp, NUM_AFTER_BURN_IN, NUM_BEFORE_BURN_IN, TREE_NUM)
   coverage[i] = est_coverage(cate_dart, dat[, "Tau"], cov_perc = c(0.05,0.95))
   #est_coverage(t(cate_dart[1:show_num,]), dat[1:show_num, "Tau"])
 }
 
 
-pdf(paste0("images/dart_dart_coverage_vs_prop_T.pdf"))  
-plot(prop_T, coverage)
+pdf(paste0("images/dart_dart_coverage_vs_squash_val.pdf"))  
+plot(squash_val, coverage)
 dev.off()
 #boxplot(t(cate_dart[1:show_num,]), 
 #        ylim = c(-1,1), 
