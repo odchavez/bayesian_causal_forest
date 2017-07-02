@@ -61,11 +61,18 @@ get_train_test_cv = function(dat, fold){
 }
 
 est_coverage = function(mat, Tau, cov_perc){
-  MIN = apply(mat, 2, min)#apply(mat, 2, quantile, probs = cov_perc[1])
-  MAX = apply(mat, 2, max)#apply(mat, 2, quantile, probs = cov_perc[2])
+  MIN = apply(mat, 2, quantile, probs = cov_perc[1])#apply(mat, 2, min)#
+  MAX = apply(mat, 2, quantile, probs = cov_perc[2])#apply(mat, 2, max)#
   
   index = which( Tau > MIN & Tau < MAX )
   count = length(index)
   covered_ratio = count/length(Tau)
   return(covered_ratio)
+}
+est_coverage_size_median = function(mat, cov_perc){
+  MIN = apply(mat, 2, quantile, probs = cov_perc[1])
+  MAX = apply(mat, 2, quantile, probs = cov_perc[2])
+  
+  output = median(MAX - MIN)
+  return(output)
 }

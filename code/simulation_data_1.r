@@ -79,7 +79,7 @@ make_data_w_imbalance = function(N, P, noise_std, squash_val,  seed){
 N = 10^4
 P = 1000
 per_std = 0.64
-squash_val = seq(0.1,1, by = 0.1)
+squash_val = c(0.01,seq(0.05,0.95, by = 0.05), 0.99)
 #regular data
 #for(d in 1:10){
 #	seed = d
@@ -89,6 +89,6 @@ squash_val = seq(0.1,1, by = 0.1)
 #imbalanced data
 for(d in 1:length(squash_val)){
   seed = d
-  dat = make_data_w_imbalance(N, P, squash_val[d], per_std, seed)
+  dat = make_data_w_imbalance(N, P, per_std, squash_val[d], seed)
   write.csv(dat, paste0("data/caus_sim_1_N=",N,"_P=",P,"_noise_percent=", per_std, "_squash_val_", squash_val[d],".csv"))
 }
