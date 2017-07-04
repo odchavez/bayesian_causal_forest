@@ -83,49 +83,58 @@ organize_causal_posterior = function(cate_dart_out){
 
 #using simulation.2 data from Athey CAT paper
 cov_perc = c(0.05,0.95)
-pred_num = 100
+pred_num = 50
 std_per = 0.64
 set_val = 2
 NUM_AFTER_BURN_IN = 2000
 NUM_BEFORE_BURN_IN = 500
 TREE_NUM = 50
-p_val_num = 100
+p_val_num = 50
 show_num  = 100
 N = 10000
 ## Fit causal dart
-squash_val = c(0.01, seq(0.05, 0.95, by = 0.05), 0.99)
-coverage = rep(NA, length(squash_val))
+squash_val    = c(0.01, seq(0.05, 0.95, by = 0.05), 0.99)
+coverage      = rep(NA, length(squash_val))
 interval_size = rep(NA, length(squash_val))
+prec_T        = rep(NA, length(squash_val))
 for(i in 1:length(squash_val)){
+  
+  
   dat = read.csv(paste0("data/caus_sim_1_N=10000_P=1000_noise_percent=",std_per,"_squash_val_",squash_val[i],".csv"))[1:N,1:(6+pred_num)]
   cnames = c("X","Tau","Y0_given_X","Y1_given_X","Y","T")
   train_TorC = list()
   train_TorC$X = dat[,-which(names(dat) %in% cnames)]
   train_TorC$Y = factor(dat$T)
-  #temp = train_TorC
-  #temp$Y = select_percent_T(squash_val[i], length(temp$Y))
+
+  
   cate_dart        = causal_dart(dat, train_TorC, NUM_AFTER_BURN_IN, NUM_BEFORE_BURN_IN, TREE_NUM)
   coverage[i]      = est_coverage(cate_dart, dat[, "Tau"], cov_perc)
   interval_size[i] = est_coverage_size_median(cate_dart, cov_perc)
 
+  
   ord_index = order(dat$Tau, decreasing = TRUE)
   ord_Tua = dat$Tau[ord_index]
   even_space_100 = seq(1, N, by = N/100)
-  pdf(paste0("images/dart_dart_ind_effects_squash_val=",squash_val[i],"_perc_T=",sum(dat$T)/nrow(dat),"_N=",N,"_P=",pred_num,".pdf"))  
+  prec_T[i] = sum(dat$T)/nrow(dat)
+  pdf(paste0("images/dart_dart_ind_effects_squash_val=",squash_val[i],"_perc_T=",prec_T[i],"_N=",N,"_P=",pred_num,".pdf"))  
   boxplot(cate_dart[sample(nrow(cate_dart), 2000, replace = FALSE),ord_index[even_space_100] ], 
           ylim = c(-1,1), 
           main = "dart only")
           #sub = paste("coverage ratio = ", cov_ratio)) 
   points(1:length(even_space_100) ,ord_Tua[even_space_100], col = 'red', pch = 4)
   abline(h = 0, col = 'red')
-  dev.off()    
+  dev.off() 
+  
+  
+  rm(cate_dart)
+
 }
 
 
-pdf(paste0("images/dart_dart_coverage_vs_squash_val","_N=",N,"_P=",pred_num,".pdf"))  
+pdf(paste0("images/dart_dart_coverage_vs_prec_T","_N=",N,"_P=",pred_num,".pdf"))  
 par(mfrow = c(1,2))
-plot(squash_val, coverage)
-plot(squash_val, interval_size)
+plot(prec_T, coverage)
+plot(prec_T, interval_size)
 dev.off()
 #pdf(paste0("images/dart_dart_ind_effects.pdf"))  
 #boxplot(t(cate_dart[1:show_num,]), 
